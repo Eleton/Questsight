@@ -1,4 +1,4 @@
-
+var osbscenelyNamedVariable= "sträng skriven på svenska";
 var Atom = function(name, power, speed, maxSpeedGauge){
     this.name = name;
     this.power = power;
