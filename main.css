@@ -1,0 +1,30 @@
+.playerStats{
+    float: left;
+}
+
+.enemyStats{
+    float: right;
+}
+
+#attackButton{
+    background-color: #999;
+
+    margin-left: auto;
+    margin-right: auto;
+    width: 50px;
+}
+
+#shortcuts{
+    position: absolute;
+    bottom: 0;
+}
+
+.active{
+    background-color: peachpuff;
+    border-color: crimson;
+}
+
+.basicBox{
+    border: 3px solid black;
+    border-radius: 5px;
+}
