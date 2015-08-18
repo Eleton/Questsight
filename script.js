@@ -41,7 +41,7 @@ Unit.prototype.awaitTurn = function () {
     this.speedGauge += this.speed;
     var hasWaited = this.speedGauge >= this.MAX_SPEED_GAUGE ? true : false;
     if (hasWaited) {
-        this.speedGauge -= this.MAX_SPEED_GAUGE;
+        this.speedGauge = 0;
     }
     return hasWaited;
 };
@@ -134,8 +134,6 @@ function battleFrame(hero, enemies) {
     var gameLoop = function () {
         var aliveEnemies = enemies.some(isAlive);
 
-        console.log("ett" + hero.speedGauge);
-
         //Ends the battle if one side is defeated
         if (!aliveEnemies) {
             clearInterval(battle);
@@ -151,9 +149,6 @@ function battleFrame(hero, enemies) {
                 var atom = atoms[i];
                 var isActive = atom.awaitTurn();
             }
-
-            console.log(hero.active)
-            console.log(hero.currentAtom.active)
 
             if (hero.active && hero.currentAtom.active) {
                 hero.attackTarget(currentTarget);
@@ -233,15 +228,19 @@ function battleFrame(hero, enemies) {
 
         var enemyBox = $(".enemyStats .container");
         enemyBox.children().each(function () {
-            var enemy = enemies[$(this).text().slice(5, 6)];
+            var enemy = enemies[$(this).children(".index").text()];
             $(this).children(".hp").text(enemy.hp + " hp");
             $(this).children(".speed").remove();
-            presentSpeed(enemy).addClass("speed").appendTo($(this));
+            if (!enemy.alive){
+                $(this).addClass("dead");
+            }else{
+                presentSpeed(enemy).addClass("speed").appendTo($(this));
+            }
         });
 
         var atomBox = $(".atomBox");
         atomBox.children().each(function () {
-            var atom = hero.arsenal[$(this).text().slice(4, 5)];
+            var atom = hero.arsenal[$(this).children(".index").text()];
             $(this).children(".speed").remove();
             presentSpeed(atom).addClass("speed").appendTo($(this));
         });
@@ -280,7 +279,7 @@ function battleFrame(hero, enemies) {
             } else {
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
-                var enemyIndex = $(this).text().slice(5, 6); //DEN HÄR GREJEN BÖR ÄNDRAS!
+                var enemyIndex = $(this).children(".index").text();
                 currentTarget = enemies[enemyIndex];
             }
         });
@@ -294,7 +293,7 @@ function battleFrame(hero, enemies) {
             } else {
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
-                var atomIndex = $(this).text().slice(4, 5); //DEN HÄR GREJEN BÖR ÄNDRAS
+                var atomIndex = $(this).children(".index").text();
                 hero.currentAtom = hero.arsenal[atomIndex];
             }
         });
