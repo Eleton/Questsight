@@ -1,3 +1,5 @@
+
+
 //--------Atom prototype-------
 var Atom = function (name, power, speed, maxSpeedGauge) {
     this.name = name;
@@ -6,7 +8,7 @@ var Atom = function (name, power, speed, maxSpeedGauge) {
     this.active = false;
     this.speedGauge = 0;
     this.MAX_SPEED_GAUGE = maxSpeedGauge;
-}
+};
 
 Atom.prototype.awaitTurn = function () {
     if (this.speedGauge >= this.MAX_SPEED_GAUGE) {
@@ -15,12 +17,12 @@ Atom.prototype.awaitTurn = function () {
     } else {
         this.speedGauge += this.speed;
     }
-}
+};
 
 Atom.prototype.use = function () {
     this.active = false;
     this.speedGauge = 0;
-}
+};
 
 //---------Unit prototype--------
 var Unit = function (name, hp, attack, defence, speed) {
@@ -38,14 +40,16 @@ var Unit = function (name, hp, attack, defence, speed) {
 Unit.prototype.awaitTurn = function () {
     this.speedGauge += this.speed;
     var hasWaited = this.speedGauge >= this.MAX_SPEED_GAUGE ? true : false;
-    if (hasWaited) this.speedGauge -= this.MAX_SPEED_GAUGE;
+    if (hasWaited) {
+        this.speedGauge -= this.MAX_SPEED_GAUGE;
+    }
     return hasWaited;
-}
+};
 
 Unit.prototype.attackTarget = function (target) {
-    damage = this.attack - target.defence;
+    var damage = this.attack - target.defence;
     target.takeDamage(damage);
-}
+};
 
 Unit.prototype.takeDamage = function (damage) {
     if (damage >= this.hp) {
@@ -56,7 +60,7 @@ Unit.prototype.takeDamage = function (damage) {
         this.hp -= damage;
         /*console.log(this.name + " took " + damage + " points of damage, has " + this.hp + "hp left!");*/
     }
-}
+};
 
 //-----------Enemy prototype--------
 function Enemy(name, hp, attack, defence, speed) {
@@ -72,42 +76,41 @@ function Player(name, hp, attack, defence, speed, arsenal) {
     Unit.call(this, name, hp, attack, defence, speed);
     this.arsenal = arsenal;
     this.currentAtom = arsenal[0];
-    this.waiting = false;
+    this.active = false;
 }
 
 Player.prototype = Object.create(Unit.prototype);
 
 Player.prototype.attackTarget = function (target) {
-    damage = this.attack + this.currentAtom.power - target.defence;
+    var damage = this.attack + this.currentAtom.power - target.defence;
     this.currentAtom.use();
-    this.waiting = false;
+    this.active = false;
     target.takeDamage(damage);
-}
+    this.speedGauge = 0;
+};
 
 Player.prototype.awaitTurn = function () {
-    if (!this.waiting) {
+    if (!this.active) {
         this.speedGauge += this.speed;
-        var hasWaited = this.speedGauge > this.MAX_SPEED_GAUGE ? true : false;
-        if (hasWaited) this.speedGauge -= this.MAX_SPEED_GAUGE;
-        return hasWaited;
-    }else{
-        this.speedGauge = this.MAX_SPEED_GAUGE;
-        return true;
+        if (this.speedGauge >= this.MAX_SPEED_GAUGE) {
+            this.speedGauge = this.MAX_SPEED_GAUGE;
+            this.active = true;
+        }
     }
-}
+};
 
 //Initialize atoms, player character and enemies for the battleFrame-function
-hydrogenium = new Atom("Hydrogenium", 1, 5, 20);
+var hydrogenium = new Atom("Hydrogenium", 1, 5, 20);
 
-helium = new Atom("Helium", 5, 1, 15);
+var helium = new Atom("Helium", 5, 1, 15);
 
-arsenal = [hydrogenium, helium];
+var arsenal = [hydrogenium, helium];
 
-mike = new Player("Mike", 20, 5, 1, 4, arsenal);
+var mike = new Player("Mike", 20, 5, 1, 4, arsenal);
 
-rat = new Enemy("Rattigan", 30, 2, 1, 2);
+var rat = new Enemy("Rattigan", 30, 2, 1, 2);
 
-bat = new Enemy("Batshit McCrazy", 10, 2, 1, 5);
+var bat = new Enemy("Batshit McCrazy", 10, 2, 1, 5);
 
 var enemyArray = [rat, bat];
 
@@ -115,7 +118,7 @@ var enemyArray = [rat, bat];
 
 
 function isAlive(element, index, array) {
-  return element.alive;
+    return element.alive;
 }
 
 battleFrame(mike, enemyArray);
@@ -123,49 +126,57 @@ battleFrame(mike, enemyArray);
 //This is the start of the battle, initiating a battle with the enemies from the args
 function battleFrame(hero, enemies) {
 
-    
+
     var paused = false;
     var currentTarget = enemies[0];
     //var battle = setInterval(loop, 1000);
-    
-    var gameLoop = function(){
+
+    var gameLoop = function () {
         var aliveEnemies = enemies.some(isAlive);
-    
-        if(!aliveEnemies){
+
+        console.log("ett" + hero.speedGauge);
+
+        //Ends the battle if one side is defeated
+        if (!aliveEnemies) {
             clearInterval(battle);
             console.log("You win!");
-        }else if(!hero.alive){
+        } else if (!hero.alive) {
             clearInterval(battle);
             console.log("You lose...");
-        }
-        
-        var atoms = hero.arsenal;
-        for (var i = 0; i < atoms.length; i++) {
-            var atom = atoms[i];
-            var isActive = atom.awaitTurn();
-        }
-        
-        var heroReady = hero.awaitTurn();
-        if(heroReady && hero.currentAtom.active){
-            hero.attackTarget(currentTarget);
-            hero.waiting = false;
-        }else if(heroReady && !hero.currentAtom.active || heroReady && hero.currentAtom === null){
-            hero.waiting = true;
-        }
-        
-        for(var i = 0; i < enemies.length; i++){
-            enemy = enemies[i];
-            var enemyTurn = enemy.awaitTurn();
-            if(enemyTurn){
-                enemies[i].attackTarget(hero);
+        } else {
+
+
+            var atoms = hero.arsenal;
+            for (var i = 0; i < atoms.length; i++) {
+                var atom = atoms[i];
+                var isActive = atom.awaitTurn();
             }
+
+            console.log(hero.active)
+            console.log(hero.currentAtom.active)
+
+            if (hero.active && hero.currentAtom.active) {
+                hero.attackTarget(currentTarget);
+            } else if (hero.active && !hero.currentAtom.active || hero.active && hero.currentAtom === null) {
+                hero.active = true;
+            }
+
+            for (var i = 0; i < enemies.length; i++) {
+                enemy = enemies[i];
+                var enemyTurn = enemy.awaitTurn();
+                if (enemyTurn) {
+                    enemies[i].attackTarget(hero);
+                }
+            }
+
+
+            updateStats();
+
+            hero.awaitTurn();
         }
-        
-        
-        
-        updateStats();
+
     }
-    
+
     var battle = setInterval(gameLoop, 600);
 
     var main = function () {
@@ -177,7 +188,7 @@ function battleFrame(hero, enemies) {
     };
 
     var initStats = function () {
-        
+
         var heroBox = $("<ul>").text("Hero").addClass("basicBox");
         var name = $("<li>").addClass("name").text(hero.name);
         var hp = $("<li>").addClass("hp").text(hero.hp + " hp");
@@ -186,7 +197,7 @@ function battleFrame(hero, enemies) {
         hp.appendTo(heroBox);
         speed.appendTo(heroBox);
         heroBox.appendTo($(".playerStats").children(".container"));
-        
+
         var atoms = hero.arsenal;
         for (var i = 0; i < atoms.length; i++) {
             var atomBox = $("<ul>").addClass("basicBox").text("Atom" + i);
@@ -195,8 +206,8 @@ function battleFrame(hero, enemies) {
             presentSpeed(atoms[i]).addClass("speed").appendTo(atomBox);
             atomBox.appendTo(".atomBox");
         }
-        
-        for(var i = 0; i < enemies.length; i++){
+
+        for (var i = 0; i < enemies.length; i++) {
             var enemy = enemies[i];
             var enemyBox = $("<ul>").text("Enemy" + i).addClass("basicBox");
             var name = $("<li>").addClass("name").text(enemy.name);
@@ -210,7 +221,7 @@ function battleFrame(hero, enemies) {
         }
         $(".enemyStats ul").first().addClass("active");
         $(".playerStats .atomBox ul").first().addClass("active");
-        
+
     }
 
     var updateStats = function () {
@@ -269,7 +280,7 @@ function battleFrame(hero, enemies) {
             } else {
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
-                var enemyIndex = $(this).text().slice(5, 6);//DEN HÄR GREJEN BÖR ÄNDRAS!
+                var enemyIndex = $(this).text().slice(5, 6); //DEN HÄR GREJEN BÖR ÄNDRAS!
                 currentTarget = enemies[enemyIndex];
             }
         });
@@ -283,7 +294,7 @@ function battleFrame(hero, enemies) {
             } else {
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
-                var atomIndex = $(this).text().slice(4, 5);//DEN HÄR GREJEN BÖR ÄNDRAS
+                var atomIndex = $(this).text().slice(4, 5); //DEN HÄR GREJEN BÖR ÄNDRAS
                 hero.currentAtom = hero.arsenal[atomIndex];
             }
         });
